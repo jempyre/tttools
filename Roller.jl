@@ -1,3 +1,9 @@
+"""
+    **roll**(_n_::__Int__)
+    _Return_s a number of successful rolls out of `n` rolls in accordance
+    with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
+    (https://www.worldofdarkness.com).
+"""
 function roll(n::Int)
     R = rand(1:10, n)
     suc = 0
@@ -26,6 +32,12 @@ function roll(n::Int)
     return suc
 end
 
+"""
+    **roll**(_n_::__Int__, _targ_::__Int__)
+    _Return_s a __margin of success__ from `n` rolls vs. a difficulty of `targ`
+    in accordance with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
+    (https://www.worldofdarkness.com).
+"""
 roll(n::Int, targ::Int) = roll(n) - targ # returns a margin of success
 
 function composeui()
