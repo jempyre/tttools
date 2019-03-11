@@ -28,16 +28,33 @@ end
 
 roll(n::Int, targ::Int) = roll(n) - targ # returns a margin of success
 
-# compose the UI
-using Interact
-dice = input(3; typ="number")
-target = input(3; typ="number")
-rollnow = button("Roll!")
-dicel = hbox("Dice to Roll:", dice)
-targl = hbox("Success Need:", target)
-roller = vbox(dicel, targl, rollnow)
-on(n -> println(roll(dice[], target[])), rollnow)
+function composeui()
+    dice = input(3; typ="number")
+    target = input(3; typ="number")
+    rollnow = button("Roll!")
+    dicel = hbox("Dice to Roll:", dice)
+    targl = hbox("Success Need:", target)
+    roller = vbox(dicel, targl, rollnow)
+    on(n -> println(roll(dice[], target[])), rollnow)
+end
 
-using Blink
-w = Window()
-body!(w, roller)
+# compose the UI
+try using Interact
+    composeui()
+catch ArgumentError
+    import Pkg; Pkg.add("Interact")
+    using Interact
+    composeui()
+end
+
+function showwin()
+    w = Window()
+    body!(w, roller)
+end
+
+try using Blink
+    showwin()
+catch ArgumentError
+    import Pkg; Pkg.add("Blink")
+    showwin()
+end
