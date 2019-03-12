@@ -1,3 +1,17 @@
+module WoDRoller
+import Pkg
+
+macro require(pkg...)
+    for p in pkg
+        try Pkg.installed()["$p"]
+        catch KeyError
+            Pkg.add("$p")
+        end
+    end
+end
+
+@require Interact Blink
+
 """
     **roll**(_n_::__Int__)
     _Return_s a number of successful rolls out of `n` rolls in accordance
@@ -40,33 +54,16 @@ end
 """
 roll(n::Int, targ::Int) = roll(n) - targ # returns a margin of success
 
-function composeui()
-    dice = input(3; typ="number")
-    target = input(3; typ="number")
-    rollnow = button("Roll!")
-    dicel = hbox("Dice to Roll:", dice)
-    targl = hbox("Success Need:", target)
-    roller = vbox(dicel, targl, rollnow)
-    on(n -> println(roll(dice[], target[])), rollnow)
-end
-
 # compose the UI
-try using Interact
-    composeui()
-catch ArgumentError
-    import Pkg; Pkg.add("Interact")
-    using Interact
-    composeui()
-end
-
-function showwin()
-    w = Window()
-    body!(w, roller)
-end
-
-try using Blink
-    showwin()
-catch ArgumentError
-    import Pkg; Pkg.add("Blink")
-    showwin()
+using Interact
+dice = input(3; typ="number")
+target = input(3; typ="number")
+rollnow = button("Roll!")
+dicel = hbox("Dice to Roll:", dice)
+targl = hbox("Success Need:", target)
+roller = vbox(dicel, targl, rollnow)
+on(n -> println(roll(dice[], target[])), rollnow)
+using Blink
+w = Window()
+body!(w, roller)
 end
