@@ -1,0 +1,5 @@
+todo:
+  - "Slice the finished product across functionality and ruleset for a multi-dim `module` scheme"
+  - "explore using `struct` as `docstring` by diving into the `Documentor.jl`"
+  - "Research Potentially porting js code for versioning of `@require`."
+  

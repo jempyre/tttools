@@ -1,0 +1,16 @@
+Notes:
+
+- """Using fully formed custom `type`s to pass your datas betwixt your `function`s you
+**may use the declaration of the `struct` as the properly formed `docstring`**"""
+- """Do we integrate `yaml` as a data store on the base doc?`-` the giveaway"""
+- functions are the class of julia
+  + they create methods and data-access as needed
+  + """implementing inheritance is as easy as leveraging variable-scope ie
+    ```julia
+    function class(meta::Meta, data::Data{T::Any}...)
+        _{
+        "meta" => meta
+        "data" => data
+        }
+        class()
+    """

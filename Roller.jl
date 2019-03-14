@@ -1,16 +1,17 @@
 """
-WoDRoller throws virtual dice to resolve tests in accordance with the rules
-from the [Vampire: The Masquerade _Fifth Edition_]
-(https://www.worldofdarkness.com).
+`Require` is a middle-ware for pkg management above the `Pkg` module.
 """
-module WoDRoller
+module Require
 import Pkg
+
+export @require
 
 """
 `@require` installs packages that are passed to it if they are not currently
 registered.
->NOTE: Currently does not check version strings.
->Potentially port js code.
+
+!!! note
+    Currently does not check version strings.
 """
 macro require(pkg...)
     for p in pkg
@@ -20,8 +21,20 @@ macro require(pkg...)
         end
     end
 end
+end
 
-@require Interact Blink
+"""
+Roller is the base module for the dice rolling functions.
+"""
+module Roller
+
+"""
+`WoDRoller` throws virtual dice to resolve tests in accordance with the rules
+from the [Vampire: The Masquerade _Fifth Edition_]
+(https://www.worldofdarkness.com).
+"""
+module WoDRoller
+import Main.Require; Require.@require Interact Blink;
 
 """
     roll(n [, targ])
@@ -32,12 +45,13 @@ with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
 If _targ_ is supplied, `return` a __margin of success__ instead.
 
 # Paramaters
-- `n::Integer`: The number of dice to roll, i.e. the _Player Character's_ sskill level
-- `targ::Integer`: The _target_ number of successes required.
+- `n::Integer`: The number of dice to roll, i.e. the _Player Character's_ skill level.
+- `targ::Integer`: The _target_ number of successes required. Will `return` a _margin of success_.
 
 # Examples
 ```jldoctest
 julia>rng = MersenneTwister(1234); #TODO need to pass seed to roll().
+
 julia>
 
 ```
@@ -70,7 +84,6 @@ function roll(n::Int)
     return suc
 end
 
-
 roll(n::Int, targ::Int) = roll(n) - targ # returns a margin of success
 
 # compose the UI
@@ -88,22 +101,43 @@ body!(w, roller)
 end
 
 """
-EPRoller throws virtual dice to resolve tests in accordance with the rules
+`EPRoller` throws virtual dice to resolve tests in near accordance with the rules
 from the [Eclipse Phase 2e Playtest ruleset](www.eclipsephase.com).
+
+!!! note
+    this code may be considered _opinionated_. See below for details.
+
+# Opinionated Code
+Rather than follow the **RAW** precisely, we make a few shortcuts that may be
+important to you.
+
+## Settling Ties
+In a contest ties are settled by comparing the _Character_s
+*final target difficulty* rather than their *base* skill values. Our opinion
+is that the **RAW** mistakenly ignores environmental factors when settling a tie,
+and this is especially important to our code-base because it actually costs
+more to get the **RAW** authorized `return`.ex
 """
 module EPRoller
 
+"`TestResult` stuctures the data resulting from `EPRoller` functions."
 struct TestResult
-    roll::Int
-    success::Bool
-    magnitude::Int
-    crit::Bool
+    roll::Integer
+    success::Boolean
+    magnitude::Integer
+    crit::Boolean
 end
 
 """
-    **quicktest**(_target_::__Int__) performs a _d100_ roll against the `target`,
-        evaluating the resulting `TestResult` in accordance with
-        the [Eclipse Phase](www.eclipsephase.com) __2nd Edition Playtest__ rules.
+    quicktest(target) performs a _d100_ roll against the `target`.
+
+The resulting `TestResult` is built according to the
+[Eclipse Phase](www.eclipsephase.com) __2nd Edition Playtest__ rules, _mostly_.
+
+!!! note
+    See [Roller.EPRoller](@ref)
+# Parameters
+- `target::Integer`: The target value to roll under.
 """
 function quicktest(target::Int)
     roll = rand(0:99)
@@ -192,4 +226,5 @@ function opposedtest(targ1::Int, targ2::Int)
     end
     return secondplayerwins
 end
-end
+end #eproller
+end #roller
