@@ -1,6 +1,17 @@
+"""
+WoDRoller throws virtual dice to resolve tests in accordance with the rules
+from the [Vampire: The Masquerade _Fifth Edition_]
+(https://www.worldofdarkness.com).
+"""
 module WoDRoller
 import Pkg
 
+"""
+`@require` installs packages that are passed to it if they are not currently
+registered.
+>NOTE: Currently does not check version strings.
+>Potentially port js code.
+"""
 macro require(pkg...)
     for p in pkg
         try Pkg.installed()["$p"]
@@ -13,10 +24,23 @@ end
 @require Interact Blink
 
 """
-    **roll**(_n_::__Int__)
-    _Return_s a number of successful rolls out of `n` rolls in accordance
-    with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
-    (https://www.worldofdarkness.com).
+    roll(n [, targ])
+`Return` a number of successful rolls out of `n` rolls in accordance
+with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
+(https://www.worldofdarkness.com).
+
+If _targ_ is supplied, `return` a __margin of success__ instead.
+
+# Paramaters
+- `n::Integer`: The number of dice to roll, i.e. the _Player Character's_ sskill level
+- `targ::Integer`: The _target_ number of successes required.
+
+# Examples
+```jldoctest
+julia>rng = MersenneTwister(1234); #TODO need to pass seed to roll().
+julia>
+
+```
 """
 function roll(n::Int)
     R = rand(1:10, n)
@@ -46,12 +70,7 @@ function roll(n::Int)
     return suc
 end
 
-"""
-    **roll**(_n_::__Int__, _targ_::__Int__)
-    _Return_s a __margin of success__ from `n` rolls vs. a difficulty of `targ`
-    in accordance with the rules presented in [Vampire: The Masquerade _Fifth Edition_]
-    (https://www.worldofdarkness.com).
-"""
+
 roll(n::Int, targ::Int) = roll(n) - targ # returns a margin of success
 
 # compose the UI
@@ -69,8 +88,8 @@ body!(w, roller)
 end
 
 """
-    EPRoller throws virtual dice to resolve tests in accordance with the rules
-    from the [Eclipse Phase 2e Playtest ruleset](www.eclipsephase.com).
+EPRoller throws virtual dice to resolve tests in accordance with the rules
+from the [Eclipse Phase 2e Playtest ruleset](www.eclipsephase.com).
 """
 module EPRoller
 
