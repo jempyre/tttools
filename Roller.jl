@@ -67,3 +67,110 @@ using Blink
 w = Window()
 body!(w, roller)
 end
+
+"""
+    EPRoller throws virtual dice to resolve tests in accordance with the rules
+    from the [Eclipse Phase 2e Playtest ruleset](www.eclipsephase.com).
+"""
+module EPRoller
+
+struct TestResult
+    roll::Int
+    success::Bool
+    magnitude::Int
+    crit::Bool
+end
+
+"""
+    **quicktest**(_target_::__Int__) performs a _d100_ roll against the `target`,
+        evaluating the resulting `TestResult` in accordance with
+        the [Eclipse Phase](www.eclipsephase.com) __2nd Edition Playtest__ rules.
+"""
+function quicktest(target::Int)
+    roll = rand(0:99)
+    success = false
+    magnitude = 0
+    crit = false
+
+    # check for success
+    if roll ≤ target
+        success = true
+    end
+
+    # check for superior results
+    if success && roll ≥ 33
+        magnitude += 1
+        if roll ≥ 66
+            magnitude += 1
+        end
+    elseif roll ≤ 66
+        magnitude += 1
+        if roll ≤ 33
+            magnitude += 1
+        end
+    end
+
+    # check for crits
+    if (roll ÷ 10) == (roll % 10)
+        crit = true
+    end
+
+    # check for auto crits
+    if (roll == 0)
+        success = true
+        crit = true
+    elseif roll == 99
+        success = false
+        crit = true
+    end
+
+    return TestResult(roll, success, magnitude, crit)
+end
+
+"""
+    **opposedtest**(_targ1_::__Int__, _targ2_::__Int__) performs a `quicktest()`
+        on each `targ`, comparing the resultant `TestResult`s in accordance with
+        the [Eclipse Phase](www.eclipsephase.com) __2nd Edition Playtest__ rules.
+"""
+function opposedtest(targ1::Int, targ2::Int)
+    test1 = quicktest(targ1)
+    test2 = quicktest(targ2)
+    secondplayerwins = false # false implies that the first player defaults as winner
+
+    function checkrolls(_test1::TestResult,
+                _test2::TestResult, _targ1::Int, _targ2::Int)
+
+        if _test2.roll > _test1.roll
+            return true
+        elseif _test2.roll == _test1.roll # the rolls were equal
+            # give the tie to the higher target
+            if _targ2 > _targ1
+                return true
+            elseif _targ2 == _targ1 # still a tie, call recursively (as if to roll again)
+                return opposedtest(_targ1, _targ2)
+            end
+        else
+            # roll1 is higher
+            return false
+        end
+    end
+
+    # compare the results
+    if test2.success && !test1.success
+        # only the second test succeeded
+        secondplayerwins = true
+    elseif test2.success && test1.success
+        # both succeed, so check for higher roll
+        secondplayerwins = checkrolls(test1, test2, targ1, targ2)
+        # check for crits to trump rolls
+        if test2.crit && !test1.crit # second player has a crit
+            secondplayerwins = true
+        elseif test1.crit && !test2.crit
+            secondplayerwins = false
+        end
+    elseif !test2.success && !test1.success
+        secondplayerwins = checkrolls(test1, test2, targ1, targ2)
+    end
+    return secondplayerwins
+end
+end
